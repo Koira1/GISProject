@@ -12,10 +12,26 @@ app.get('/', function (req, res) {
     })
 
 app.get('/json', function (req, res) {
-    console.log("Hello from server");
     fs.readFile( __dirname + "/data.json")
         .then(data => {
-            console.log("Yeheaa")
+            res.setHeader("Content-Type", "application/json")
+            res.writeHead(200);
+            res.end( data );
+    });
+});
+
+app.get('/hotels', function (req, res) {
+    fs.readFile( __dirname + "/hotels.json")
+        .then(data => {
+            res.setHeader("Content-Type", "application/json")
+            res.writeHead(200);
+            res.end( data );
+    });
+});
+
+app.get('/directions', function (req, res) {
+    fs.readFile( __dirname + "/directions.json")
+        .then(data => {
             res.setHeader("Content-Type", "application/json")
             res.writeHead(200);
             res.end( data );
@@ -26,6 +42,7 @@ app.get('/json', function (req, res) {
  app.get('/logic.js', function (req, res) {
     res.sendFile(__dirname + "/" + "logic.js");
   });
+
 
 var server = app.listen(8000, function () {
     var host = server.address().address

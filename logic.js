@@ -1,7 +1,15 @@
-getjson();
+getCities();
 
-function getjson(){
-    console.log("fetching..");
+function getCities(){
+    var mapOptions = {
+        center: [41.013888888888886, 28.955555555555556],
+        zoom: 10,
+        preferCanvas: true
+     }
+    var map = new L.map('map', mapOptions);
+    var layer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+    // Adding layer to the map
+    map.addLayer(layer);
     fetch('/json')
     .then(response => {
         if (!response.ok) {
@@ -9,45 +17,67 @@ function getjson(){
         }
         response.json().then(
             json => {
-                console.log(json);
-                this.users = json;
-                //console.log(this.users);
-                drawPoints(json);
+                drawCities(json, map);
+                getRoutes(map);
             }
         )
     })
 }
 
- var latlngs = [
-     [17.385044, 78.486671],
-     [16.506174, 80.648015],
-     [17.000538, 81.804034],
-     [17.686816, 83.218482]
- ];
+function getRoutes(map){
+    fetch('/directions')
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("HTTP error " + response.status);
+        }
+        response.json().then(
+            json => {
+                drawRoutes(json, map);
+                getHotels(map)
+            }
+        )
+    })
+}
 
- var latlang = [
-[[17.385044, 78.486671], [16.506174, 80.648015], [17.686816, 83.218482]],
-[[13.082680, 80.270718], [12.971599, 77.594563],[15.828126, 78.037279]]
-];
- 
- // Adding layer to the map
- map.addLayer(layer);
+function getHotels(map) {
+    fetch('/hotels')
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("HTTP error " + response.status);
+        }
+        response.json().then(
+            json => {
+                drawHotels(json, map);
 
-function drawPoints(json) {
-    var mapOptions = {
-        center: [17.385044, 78.486671],
-        zoom: 10
-     }
-    var map = new L.map('map', mapOptions);
-    // Creating a Layer object
-    var layer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+            }
+        )
+    })
+}
+
+function drawCities(json, map) {
     var marker = new Array();
-     // Adding layer to the map
-     map.addLayer(layer);
-    var doc = document.getElementById('map');
     for(var item in json.data) {
         var data = JSON.parse(json.data[item]);
-        console.log(data.location);
-        marker = new L.Marker([data.latitude, data.longitude]).addTo(map);
+        marker = new L.Marker([data.latitude, data.longitude]).bindPopup(data.location).addTo(map);
+    }
+}
+
+function drawRoutes(json, map) {
+    var lines = new Array();
+    var i = 0;
+    for (i = 0; i < json.directions.length; i++) {
+        for (var item in json.directions[i].route) {
+            lines.push([json.directions[i].route[item].lat, json.directions[i].route[item].lng]);
+        }
+        var polyline = new L.polyline(lines, {color: 'red'}).addTo(map);
+    }
+}
+
+function drawHotels(json, map) {
+    var marker = new Array();
+    for (i = 0; i < json.data.length; i++) {
+        for(var item in json.data[i].hotels) {
+            marker = new L.circleMarker([json.data[i].hotels[item]["location"].lat, json.data[i].hotels[item]["location"].lng], { radius : 4, color: '#FFFF00', opacity : 10, fillOpacity : 10 }).bindPopup(json.data[i].hotels[item].name).addTo(map);
+        }
     }
 }
