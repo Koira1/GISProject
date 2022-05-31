@@ -28,14 +28,31 @@ def getLocations(url):
         print("No route found")
         
 
+def getHotels(url):
+    payload={}
+    headers = {}
+    response = requests.request("GET", url, headers=headers, data=payload)
+    hotels = json.loads(response.text)
+    listofhotels = []
+    i = 0
+    while i < len(hotels["results"]):
+        data = {
+        "location" : hotels["results"][i]["geometry"]["location"],
+        "name" : hotels["results"][i]["name"]
+        }
+        listofhotels.append(data)
+        i = i + 1
+
+    hoteldata = { "hotels": listofhotels }
+    write_json(hoteldata)
 
 # function to add to JSON
-def write_json(new_data, filename='directions.json'):
+def write_json(new_data, filename='hotels.json'):
     with open(filename,'r+') as file:
           # First we load existing data into a dict.
         file_data = json.load(file)
         # Join new_data with file_data inside emp_details
-        file_data["directions"].append(new_data)
+        file_data["data"].append(new_data)
         # Sets file's current position at offset.
         file.seek(0)
         # convert back to json.
@@ -53,20 +70,20 @@ destination = {}
 
 while i < len(data["data"]) - 1:
     origin = json.loads(data["data"][i])
-    destination = json.loads(data["data"][i+1])
-    url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + str(origin['latitude']) + "," + str(origin['longitude']) + "&destination=" + str(destination['latitude']) + "," + str(destination['longitude']) + "&key=AIzaSyCRQFrcOTRUAucq5FYDOg8beeE5ymI4uew"
-    print(i)
-    getLocations(url)
+    #destination = json.loads(data["data"][i+1])
+    #url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + str(origin['latitude']) + "," + str(origin['longitude']) + "&destination=" + str(destination['latitude']) + "," + str(destination['longitude']) + "&key="
+    url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + str(origin['latitude']) + "," + str(origin['longitude']) + "&radius=5000&type=hotel&key="
+    #print(i)
+    #getLocations(url)
+    getHotels(url)
     i = i + 1
     
-
-#for i in data[0]['location']:
-#    print(i)
 
 f.close()
 
 
-#url = "https://maps.googleapis.com/maps/api/directions/json?origin=42.874722222222225,74.61222222222221&destination=40.53,72.8&key=AIzaSyCRQFrcOTRUAucq5FYDOg8beeE5ymI4uew"
+#url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=41.013888888888886,28.955555555555556&radius=5000&type=hotel&key="
+#getHotels(url)
 #getLocations(url)
 
 
