@@ -75,6 +75,7 @@ while i < len(data["data"]) - 1:
     url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + str(origin['latitude']) + "," + str(origin['longitude']) + "&radius=5000&type=hotel&key="
     #print(i)
     #getLocations(url)
+    #asd
     getHotels(url)
     i = i + 1
     
